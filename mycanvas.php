@@ -18,9 +18,11 @@
 </head>
 <body>
 	<header>
+	<h1>Welcome <?php getSelf(); ?></h1>
 	<?php
-		getSelf();
 		getAvatar();
+		
+		
 	 ?>
 	</header>
 	<div class="content">

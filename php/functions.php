@@ -70,7 +70,7 @@ function CallAPI($method, $url, $data = false){
 
 		$data = CallAPI("GET",$url);
 		$data = json_decode($data);
-		echo "<h1>" . $data->name . "</h1>";
+		echo $data->name ;
 	
 	}
 
@@ -115,15 +115,30 @@ function CallAPI($method, $url, $data = false){
 		$data = CallAPI("GET",$url);
 		// echo $data;
 		$data = json_decode($data);
+
+		//fix date issues 
+		echo "<h2>Upcoming Assignments</h2>";
 		for ($i=0; $i < count($data) ; $i++) {
 			
-			if ($data[$i]->has_submitted_submissions == TRUE) {
-				echo "<p>Submitted</p>";
-				echo "<h2>" . $data[$i]->name . "</h2>";
-			} else {
-				echo "<h2>" . $data[$i]->name . "</h2>";
-				echo "<p>Not Submitted</p>";
+			if ($data[$i]->has_submitted_submissions == FALSE) {
+				echo "<p>" . $data[$i]->name . "</p>";
 			}
+		} //end count data
+		echo "<h2>Past Assignments</h2>";
+		for ($i=0; $i < count($data) ; $i++) {
+			if ($data[$i]->has_submitted_submissions == TRUE) {
+				echo "<p>" . $data[$i]->name . "</p>";
+			} 
+		} //end count data
+		//getPastAssignments($data);
+	} //end getAssignments
+
+	function getPastAssignments($data){
+		echo "<h2>Past Assignments</h2>";
+		for ($i=0; $i < count($data) ; $i++) {
+			if (($data[$i]->has_submitted_submissions == TRUE) && ($data[$i]->lock_at < new DateTime())) {
+				echo "<p>" . $data[$i]->name . "</p>";
+			} 
 		} //end count data
 
 	} //end getAssignments
@@ -159,6 +174,17 @@ function CallAPI($method, $url, $data = false){
 		global $key;
 		$url = $canvas_site . "/courses/" . $course . "/todo?access_token=" . $key;
 		var_dump($url);
+		$data = CallAPI("GET",$url);
+		$data = json_decode($data);
+		if (count($data) != 0) {
+			for ($i=0; $i < count($data); $i++) { 
+				echo "<p>Test</p>";
+			}
+		} else {
+			echo "<p>Nothing Coming Up This Week</p>";
+		}
+		
+
 	}
 
 
@@ -178,9 +204,25 @@ function CallAPI($method, $url, $data = false){
 				echo "<div class='full-row'><h3>" . $data[$i]->name . "</h3></div>";
 				//count all the grades in enrollments
 				for ($j=0; $j < count($data[$i]->enrollments); $j++) { 
-					//$data[$i]->enrollments[$j]->computed_current_score . " " .
-					echo "<div class='xsm-row'><p class='lg-num'>" . $data[$i]->enrollments[$j]->computed_current_grade .  "</p></div>";
+					// $data[$i]->enrollments[$j]->computed_current_score . " " .
+					$grade = $data[$i]->enrollments[$j]->computed_current_grade;
+					if ($grade == 'A') {
+						$class = 'green';
+					} elseif($grade == 'B'){
+						$class = 'lightgreen';
+					} elseif($grade == 'C'){
+						$class = 'yellow';
+					}elseif($grade == 'D'){
+						$class = 'orange';
+					}elseif($grade == 'F'){
+						$class = 'red';
+					} else {
+						$class = '';
+					}
+					echo "<div class='xsm-row circle " . $class . "'><p class='lg-num'>" . $grade .  "</p></div>";
+
 				}
+				echo "<div class='clear'></div>";
 				echo "</div>";
 			} //end if course not accessible anymore
 		} //end loop
