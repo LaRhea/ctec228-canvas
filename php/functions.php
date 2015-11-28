@@ -1,5 +1,37 @@
-<?php 
+<?php
+	session_start();
 	include 'connect.inc.php';
+	// include 'sessions.php';
+
+		if (isset($_GET['course'])) {
+			$course = $_GET['course'];
+			// echo "test";
+			if (isset($_GET['action'])) {
+				$action = $_GET['action'];
+				if ($action == 'course-sess') {
+					$_SESSION['course'] = $course;
+					//if a course is selected, show the menu options
+			 		mainMenu();
+				}
+
+			}
+		} 
+
+	if (isset($_SESSION['course'])) {
+		if (isset($_GET['action'])) {
+			$action = $_GET['action'];
+			if ($action == 'assignments') {
+				getAssignments($_SESSION['course']);
+			} elseif ($action == 'quizzes') {
+				getQuizzes($_SESSION['course']);
+			} elseif($action == 'discussions'){
+				getDiscussions($_SESSION['course']);
+			} elseif ($action == 'home') {
+				getUpcoming($_SESSION['course']);
+			}
+		}
+	}
+	
 
 function CallAPI($method, $url, $data = false){
     $curl = curl_init();
@@ -16,7 +48,7 @@ function CallAPI($method, $url, $data = false){
 
 
 	function mainMenu(){
-		echo "<button class='home'><i class=\"fa fa-clock-o\"></i></button>";
+		echo "<nav><button class='home'><i class=\"fa fa-clock-o\"></i></button><button class=\"assignments\"><i class=\"fa fa-files-o\"></i></button><button class=\"discussions\"><i class=\"fa fa-comments-o\"></i></button><button class=\"quizzes\"><i class=\"fa fa-pencil-square-o\"></i></button></nav>";
 	} 
 
 
@@ -62,17 +94,44 @@ function CallAPI($method, $url, $data = false){
 	} //end getCourses
 
 	function getDiscussions($course){
+		global $canvas_site;
+		global $key;
+		$url = $canvas_site . "/courses/" . $course . "/discussion_topics?per_page=50&access_token=" . $key;
+		var_dump($url);
+		$data = CallAPI("GET",$url);
+		// echo $data;
+		$data = json_decode($data);
+		for ($i=0; $i < count($data) ; $i++) {
+			echo "<h3>".$data[$i]->title."</h3>";
+		} //end count data
 
 	}
 
 	function getAssignments($course){
-		
-	}
+		global $canvas_site;
+		global $key;
+		$url = $canvas_site . "/courses/" . $course . "/assignments?per_page=50&access_token=" . $key;
+		var_dump($url);
+		$data = CallAPI("GET",$url);
+		// echo $data;
+		$data = json_decode($data);
+		for ($i=0; $i < count($data) ; $i++) {
+			
+			if ($data[$i]->has_submitted_submissions == TRUE) {
+				echo "<p>Submitted</p>";
+				echo "<h2>" . $data[$i]->name . "</h2>";
+			} else {
+				echo "<h2>" . $data[$i]->name . "</h2>";
+				echo "<p>Not Submitted</p>";
+			}
+		} //end count data
+
+	} //end getAssignments
 
 	function getQuizzes($course){
 		global $canvas_site;
-		global$key;
-		$url = $canvas_site . "/courses/" . $course . "/quizzes?access_token=" . $key;
+		global $key;
+		$url = $canvas_site . "/courses/" . $course . "/quizzes?per_page=50&access_token=" . $key;
 		var_dump($url);
 		$data = CallAPI("GET",$url);
 		// echo $data;
@@ -93,7 +152,15 @@ function CallAPI($method, $url, $data = false){
 			// } //end count submission types
 		} //end count data
 
-	} //end getAssignments
+	} //end getQuizzes
+
+	function getupcoming($course){
+		global $canvas_site;
+		global $key;
+		$url = $canvas_site . "/courses/" . $course . "/todo?access_token=" . $key;
+		var_dump($url);
+	}
+
 
 	function getGrades() {
 		global $canvas_site;
@@ -108,10 +175,11 @@ function CallAPI($method, $url, $data = false){
 			if (!isset($data[$i]->access_restricted_by_date)) {
 		
 				echo "<div class='row'>";
-				echo "<h3>" . $data[$i]->name . "</h3>";
+				echo "<div class='full-row'><h3>" . $data[$i]->name . "</h3></div>";
 				//count all the grades in enrollments
 				for ($j=0; $j < count($data[$i]->enrollments); $j++) { 
-					echo "<p class='lg-num'>" . $data[$i]->enrollments[$j]->computed_current_score . " " . $data[$i]->enrollments[$j]->computed_current_grade .  "</p>";
+					//$data[$i]->enrollments[$j]->computed_current_score . " " .
+					echo "<div class='xsm-row'><p class='lg-num'>" . $data[$i]->enrollments[$j]->computed_current_grade .  "</p></div>";
 				}
 				echo "</div>";
 			} //end if course not accessible anymore
@@ -124,8 +192,9 @@ function CallAPI($method, $url, $data = false){
 	}
 
 
-	if (isset($_GET['course'])) {
-		$course = $_GET['course'];
-		getQuizzes($course);
-	}
+	// if (isset($_GET['course'])) {
+	// 	$course = $_GET['course'];
+	// 	getQuizzes($course);
+	// }
+
  ?>

@@ -69,18 +69,23 @@ h1,h2,h3,h4,h5,h6 {font-family: 'Droid Serif', serif; text-transform: capitalize
 h2 {font-size: 1.5em;}
 h3 {font-size: 1em;}
 
+nav { margin:20px 0;}
+	nav .fa {font-size: 2em;}
 
-nav .fa {font-size: 2em;}
-
-nav button {
-	border:none;
-	height:70px;
-	width:calc(100% / 4);
-}
+	nav button {
+		border:none;
+		border-right:1px solid black;
+		height:50px;
+		width:calc(100% / 4);
+		background-color: #fff;
+		cursor:pointer;
+	}
+	nav button:last-child{
+		border-right:none;
+	}
 
 .grades {
-	width:75%;
-	margin:0 auto;
+	width:100%;
 }
 	.grades h2 {
 		margin-bottom: 25px;
@@ -91,3 +96,12 @@ nav button {
 		padding:10px;
 		margin:10px 0;	
 	}
+
+.full-row {
+	width:calc(100% - 50px);
+	float:left;
+}
+
+.sxm-row {width:50px;float:left;}
+
+.content {width:75%; margin:0 auto;}
