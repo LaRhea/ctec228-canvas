@@ -60,7 +60,7 @@ html {
 }
 
 body {
-	font-family: 'Raleway', sans-serif;
+	font-family: 'Roboto', sans-serif;
 	font-size: 1.2em;
 }
 
@@ -96,17 +96,23 @@ nav { margin:20px 0;}
 		padding:10px;
 		margin:10px 0;	
 	}
+	.grades .row:last-child{margin-bottom: 50px;}
 
 .full-row {
 	width:calc(100% - 50px);
 	float:left;
+	line-height: 50px;
 }
 
 .xsm-row {width:50px;height:50px;float:left;}
 .circle {border-radius: 50%;}
-	.xsm-row.circle {line-height: 50px; text-align: center;}
+	.xsm-row.circle p {text-align: center;font-size: 1.5em; font-weight: 300; line-height: 40px;}
 
-.green {border: 5px solid green;}
+.green {border: 5px solid #2ecc71;}
+.dark-green {border: 5px solid #16a085;}
+.yellow {border: 5px solid #f1c40f;}
+.orange{border: 5px solid #e98b39;}
+.red {border: 5px solid #e74c3c;}
 
 .content {width:75%; margin:0 auto;}
 

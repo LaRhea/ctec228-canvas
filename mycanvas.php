@@ -10,7 +10,7 @@
 <head>
 	<meta charset="UTF-8">
 	<title>SB No. 5</title>
-	<link href='https://fonts.googleapis.com/css?family=Droid+Serif:400,700|Raleway:400,300,700' rel='stylesheet' type='text/css'>
+	<link href='https://fonts.googleapis.com/css?family=Droid+Serif:400,700|Roboto:400,300,700' rel='stylesheet' type='text/css'>
 	<link rel="stylesheet" href="css/style.css">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
@@ -29,9 +29,16 @@
 		<section class='cols grades'>
 			<h2>Current Course Grades</h2>
 			<?php getGrades(); ?>
+			<div class="row"><div class="full-row"><h3>CTEC 228  F15  2538 - API &amp; ADV INTEGRATION</h3></div><div class="xsm-row circle dark-green"><p class="lg-num">B</p></div><div class="clear"></div></div>	
+			<div class="row"><div class="full-row"><h3>CTEC 228  F15  2538 - API &amp; ADV INTEGRATION</h3></div><div class="xsm-row circle orange"><p class="lg-num">D</p></div><div class="clear"></div></div>
+			<div class="row"><div class="full-row"><h3>CTEC 228  F15  2538 - API &amp; ADV INTEGRATION</h3></div><div class="xsm-row circle green"><p class="lg-num">A</p></div><div class="clear"></div></div>
+			<div class="row"><div class="full-row"><h3>CTEC 228  F15  2538 - API &amp; ADV INTEGRATION</h3></div><div class="xsm-row circle red"><p class="lg-num">F</p></div><div class="clear"></div></div>	
+			<div class="row"><div class="full-row"><h3>CTEC 228  F15  2538 - API &amp; ADV INTEGRATION</h3></div><div class="xsm-row circle yellow"><p class="lg-num">C</p></div><div class="clear"></div></div>
+			<div class="row"><div class="full-row"><h3>CTEC 228  F15  2538 - API &amp; ADV INTEGRATION</h3></div><div class="xsm-row circle green"><p class="lg-num">A</p></div><div class="clear"></div></div>				
 		</section>
 
 		 <section>
+		 	<h2>Get Course Assignemnts, Quizzes, Discussions</h2>
 			 <select name="courses" id="courses">
 			 	<!-- <option value='test'>Test</option> -->
 			 	<?php getCourses(); ?>
