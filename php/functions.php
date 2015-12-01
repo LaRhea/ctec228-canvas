@@ -12,6 +12,7 @@
 					$_SESSION['course'] = $course;
 					//if a course is selected, show the menu options
 			 		mainMenu();
+			 		
 				}
 
 			}
@@ -48,7 +49,7 @@ function CallAPI($method, $url, $data = false){
 
 
 	function mainMenu(){
-		echo "<nav><button class='home'><i class=\"fa fa-clock-o\"></i></button><button class=\"assignments\"><i class=\"fa fa-files-o\"></i></button><button class=\"discussions\"><i class=\"fa fa-comments-o\"></i></button><button class=\"quizzes\"><i class=\"fa fa-pencil-square-o\"></i></button></nav>";
+		echo "<nav><button class='home'><i class=\"fa fa-clock-o\"></i><br>Upcoming</button><button class=\"assignments\"><i class=\"fa fa-files-o\"></i><br>Assignments</button><button class=\"discussions\"><i class=\"fa fa-comments-o\"></i><br>Discussions</button><button class=\"quizzes\"><i class=\"fa fa-pencil-square-o\"></i><br>Quizzes</button></nav>";
 	} 
 
 
@@ -67,7 +68,7 @@ function CallAPI($method, $url, $data = false){
 		global $canvas_site;
 		global $key;
 		$url = $canvas_site . "/users/self?access_token=" . $key; 
-
+		var_dump($url);
 		$data = CallAPI("GET",$url);
 		$data = json_decode($data);
 		echo $data->name ;
@@ -81,15 +82,17 @@ function CallAPI($method, $url, $data = false){
 		// var_dump($url);
 		$data = CallAPI("GET",$url);
 		$data = json_decode($data);
-		
-		echo "<option value=\"--\">-- Select A Course --</option>";
-		for ($i=0; $i < count($data); $i++) {
-			//check to make sure it is a current class
-			if (isset($data[$i]->name)) {
-				echo "<option value=\"" . $data[$i]->id  . "\">" . $data[$i]->name . "</option>";
-			}
-		} 
-		
+		if (is_array($data)) {
+			echo "<option value=\"--\">-- Select A Course --</option>";
+			for ($i=0; $i < count($data); $i++) {
+				//check to make sure it is a current class
+				if (isset($data[$i]->name)) {
+					echo "<option value=\"" . $data[$i]->id  . "\">" . $data[$i]->name . "</option>";
+				}
+			} 
+		} else {
+			echo "<p>You Have No Courses :(</p>";
+		}
 		
 	} //end getCourses
 
@@ -101,9 +104,14 @@ function CallAPI($method, $url, $data = false){
 		$data = CallAPI("GET",$url);
 		// echo $data;
 		$data = json_decode($data);
-		for ($i=0; $i < count($data) ; $i++) {
-			echo "<h3>".$data[$i]->title."</h3>";
-		} //end count data
+		if (is_array($data)) {
+			echo "<h2>Discussion Topics</h2>";
+			for ($i=0; $i < count($data) ; $i++) {
+				echo "<p><a target=\"_blank\" href='" . $data[$i]->html_url . "' title='Discussion - " . $data[$i]->title . "'>" .$data[$i]->title."</a></p>";
+			} //end count data
+		} else {
+			echo "<p>Nothing here to see!</p>";
+		}
 
 	}
 
@@ -115,33 +123,27 @@ function CallAPI($method, $url, $data = false){
 		$data = CallAPI("GET",$url);
 		// echo $data;
 		$data = json_decode($data);
-
-		//fix date issues 
-		echo "<h2>Upcoming Assignments</h2>";
-		for ($i=0; $i < count($data) ; $i++) {
-			
-			if ($data[$i]->has_submitted_submissions == FALSE) {
-				echo "<p>" . $data[$i]->name . "</p>";
-			}
-		} //end count data
-		echo "<h2>Past Assignments</h2>";
-		for ($i=0; $i < count($data) ; $i++) {
-			if ($data[$i]->has_submitted_submissions == TRUE) {
-				echo "<p>" . $data[$i]->name . "</p>";
-			} 
-		} //end count data
-		//getPastAssignments($data);
+		if (is_array($data)) {
+			//fix date issues 
+			echo "<h2>Upcoming Assignments</h2>";
+			for ($i=0; $i < count($data) ; $i++) {
+				
+				if ($data[$i]->has_submitted_submissions == FALSE) {
+					echo "<p><a target=\"_blank\" href='" . $data[$i]->html_url . "' title='Assignment - " . $data[$i]->name . "'>" . $data[$i]->name . "</a></p>";
+				}
+			} //end count data
+			echo "<h2>Past Assignments</h2>";
+			for ($i=0; $i < count($data) ; $i++) {
+				if ($data[$i]->has_submitted_submissions == TRUE) {
+					echo "<p><a target=\"_blank\" href='" . $data[$i]->html_url . "' title='Assignment - " . $data[$i]->name . "'>" . $data[$i]->name . "</a></p>";
+				} 
+			} //end count data
+			//getPastAssignments($data);
+		} else {
+			echo "<p>Nothing here to see!</p>";
+		}
 	} //end getAssignments
 
-	function getPastAssignments($data){
-		echo "<h2>Past Assignments</h2>";
-		for ($i=0; $i < count($data) ; $i++) {
-			if (($data[$i]->has_submitted_submissions == TRUE) && ($data[$i]->lock_at < new DateTime())) {
-				echo "<p>" . $data[$i]->name . "</p>";
-			} 
-		} //end count data
-
-	} //end getAssignments
 
 	function getQuizzes($course){
 		global $canvas_site;
@@ -151,34 +153,30 @@ function CallAPI($method, $url, $data = false){
 		$data = CallAPI("GET",$url);
 		// echo $data;
 		$data = json_decode($data);
-		for ($i=0; $i < count($data) ; $i++) {
-			echo "<h2>" . $data[$i]->title . "</h2>";
-			//count all the submission types in array
-			// for ($j=0; $j < count($data[$i]->submission_types); $j++) { 
-			// 	//if type includes online_quiz, then print the name 
-			// 	if ($data[$i]->submission_types[$j] == 'online_quiz') {
-			// 		echo "<h2>" . $data[$i]->name . "</h2>";
-			// 		if ($data[$i]->has_submitted_submissions == TRUE) {
-			// 			echo "<p>Submitted</p>";
-			// 		} else {
-			// 			echo "<p>Not Submitted</p>";
-			// 		}
-			// 	}
-			// } //end count submission types
-		} //end count data
+		echo "<h2>Quizzes</h2>";
+		if (is_array($data)) {
+			for ($i=0; $i < count($data) ; $i++) {
+				echo "<p><a target=\"_blank\" href='" . $data[$i]->html_url . "' title='Quiz - " . $data[$i]->title . "'>" . $data[$i]->title . "</p>";
+			} //end count data
+		} else {
+			echo "<p>Nothing here to see!</p>";
+		}
 
 	} //end getQuizzes
 
-	function getupcoming($course){
+	function getUpcoming($course){
 		global $canvas_site;
 		global $key;
 		$url = $canvas_site . "/courses/" . $course . "/todo?access_token=" . $key;
 		var_dump($url);
 		$data = CallAPI("GET",$url);
 		$data = json_decode($data);
+		echo "<h2>Upcoming This Week</h2>";
 		if (count($data) != 0) {
 			for ($i=0; $i < count($data); $i++) { 
-				echo "<p>Test</p>";
+				for ($j=0; $j < count($data[$i]->assignment); $j++) { 
+					echo "<p><a target=\"_blank\" href='" . $data[$i]->html_url . "' title='Upcoming Assignment - " . $data[$i]->assignment->name . "'>" . $data[$i]->assignment->name . "</p>";
+				}
 			}
 		} else {
 			echo "<p>Nothing Coming Up This Week</p>";
@@ -206,18 +204,19 @@ function CallAPI($method, $url, $data = false){
 				for ($j=0; $j < count($data[$i]->enrollments); $j++) { 
 					// $data[$i]->enrollments[$j]->computed_current_score . " " .
 					$grade = $data[$i]->enrollments[$j]->computed_current_grade;
-					if ($grade == 'A') {
+
+					if (strpos($grade, 'A') !== false){
 						$class = 'green';
-					} elseif($grade == 'B'){
-						$class = 'lightgreen';
-					} elseif($grade == 'C'){
+					} elseif(strpos($grade, 'B')!== false){
+						$class = 'dark-green';
+					} elseif(strpos($grade, 'C')!== false){
 						$class = 'yellow';
-					}elseif($grade == 'D'){
+					}elseif(strpos($grade, 'D')!== false){
 						$class = 'orange';
-					}elseif($grade == 'F'){
+					}elseif(strpos($grade, 'F')!== false){
 						$class = 'red';
 					} else {
-						$class = '';
+						$class = 'gray';
 					}
 					echo "<div class='xsm-row circle " . $class . "'><p class='lg-num'>" . $grade .  "</p></div>";
 
