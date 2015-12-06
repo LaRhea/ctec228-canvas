@@ -135,7 +135,7 @@ nav { margin:20px 0;}
 
 
 .content {width:75%; margin:25px auto 50px;}
-
+#course-content {min-height: 500px;}
 .clear {clear:both;}
 
 /*.course-info {
@@ -192,3 +192,5 @@ nav { margin:20px 0;}
 	color: #fff;
 	background: #333;
 }*/
+
+.avatar {max-width: 75px; }

@@ -24,7 +24,7 @@
 			if ($action == 'home') {
 				getUpcoming($_SESSION['course']);
 
-			} else {
+			} elseif($action != 'course-sess') {
 				getFuture($_SESSION['course'], $_GET['action']);
 				getAssignments($_SESSION['course']);
 			}
@@ -58,7 +58,7 @@ function CallAPI($method, $url, $data = false){
 
 		$data = CallAPI("GET",$url);
 		$data = json_decode($data);
-		echo "<img src=\"" . $data->avatar_url . "\" alt='User Avatar'>";
+		echo "<img class='avatar' src=\"" . $data->avatar_url . "\" alt='User Avatar'>";
 	}
 
 
@@ -198,7 +198,7 @@ function CallAPI($method, $url, $data = false){
 	function getAssignments($course){
 		global $canvas_site;
 		global $key;
-		$url = $canvas_site . "/courses/" . $course . "/activity_stream?per_page=50&access_token=" . $key;
+		$url = $canvas_site . "/courses/" . $course . "/assignments?per_page=50&bucket=past&include=submission&access_token=" . $key;
 
 		// $url = $canvas_site . "/courses/" . $course . "/assignments?per_page=50&access_token=" . $key;
 		var_dump($url);
@@ -206,24 +206,23 @@ function CallAPI($method, $url, $data = false){
 		// echo $data;
 		$data = json_decode($data);
 		if (is_array($data)) {
-
 			//fix date issues 
-			// echo "<h2>Upcoming Assignments</h2>";
+			echo "<h2>Past Assignments</h2>";
 			for ($i=0; $i < count($data) ; $i++) {
-				$sub_type = $data[$i]->submission_type;
-				if (property_exists($sub_type) && ($sub_type == "online_upload" || $sub_type == "online_url")) {
-					echo "<p><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></p>";
-					
-				}
-			// 	if ($data[$i]->has_submitted_submissions == FALSE) {
-			// 		echo "<p><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></p>";
-			// 	}
-			// } //end count data
-			// echo "<h2>Past Assignments</h2>";
-			// for ($i=0; $i < count($data) ; $i++) {
-			// 	if ($data[$i]->has_submitted_submissions == TRUE) {
-			// 		echo "<p><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></p>";
-			// 	} 
+				$sub_type = $data[$i]->submission_types;
+				for ($j=0; $j < count($sub_type); $j++) { 
+					if ($sub_type[$j] != "online_quiz" && $sub_type[$j] != "discussion_topic") {
+						echo "<p><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></p>";
+						echo "<p>" . substr($data[$i]->due_at, 0,10) . "</p>";
+						if (isset($data[$i]->submission)) {
+							echo "<p>" . $data[$i]->submission->score . "/" . $data[$i]->points_possible . "</p>";	
+
+						} else {
+							echo "<p>Not Graded</p>";
+						}
+					} //if not quiz or discussion
+
+				}//sub_type count
 			} //end count data
 			//getPastAssignments($data);
 		} else {
