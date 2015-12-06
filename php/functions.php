@@ -21,14 +21,12 @@
 	if (isset($_SESSION['course'])) {
 		if (isset($_GET['action'])) {
 			$action = $_GET['action'];
-			if ($action == 'assignments') {
-				getAssignments($_SESSION['course']);
-			} elseif ($action == 'quizzes') {
-				getQuizzes($_SESSION['course']);
-			} elseif($action == 'discussions'){
-				getDiscussions($_SESSION['course']);
-			} elseif ($action == 'home') {
+			if ($action == 'home') {
 				getUpcoming($_SESSION['course']);
+
+			} else {
+				getFuture($_SESSION['course'], $_GET['action']);
+				getAssignments($_SESSION['course']);
 			}
 		}
 	}
@@ -60,7 +58,7 @@ function CallAPI($method, $url, $data = false){
 
 		$data = CallAPI("GET",$url);
 		$data = json_decode($data);
-		echo "<img src='" . $data->avatar_url . "' alt='User Avatar'/ width='50px' height='50px'>";
+		echo "<img src=\"" . $data->avatar_url . "\" alt='User Avatar'>";
 	}
 
 
@@ -68,123 +66,12 @@ function CallAPI($method, $url, $data = false){
 		global $canvas_site;
 		global $key;
 		$url = $canvas_site . "/users/self?access_token=" . $key; 
-		var_dump($url);
+		//var_dump($url);
 		$data = CallAPI("GET",$url);
 		$data = json_decode($data);
 		echo $data->name ;
 	
 	}
-
-	function getCourses(){
-		global $canvas_site;
-		global $key;
-		$url = $canvas_site . "/courses?access_token=" . $key; 
-		// var_dump($url);
-		$data = CallAPI("GET",$url);
-		$data = json_decode($data);
-		if (is_array($data)) {
-			echo "<option value=\"--\">-- Select A Course --</option>";
-			for ($i=0; $i < count($data); $i++) {
-				//check to make sure it is a current class
-				if (isset($data[$i]->name)) {
-					echo "<option value=\"" . $data[$i]->id  . "\">" . $data[$i]->name . "</option>";
-				}
-			} 
-		} else {
-			echo "<p>You Have No Courses :(</p>";
-		}
-		
-	} //end getCourses
-
-	function getDiscussions($course){
-		global $canvas_site;
-		global $key;
-		$url = $canvas_site . "/courses/" . $course . "/discussion_topics?per_page=50&access_token=" . $key;
-		var_dump($url);
-		$data = CallAPI("GET",$url);
-		// echo $data;
-		$data = json_decode($data);
-		if (is_array($data)) {
-			echo "<h2>Discussion Topics</h2>";
-			for ($i=0; $i < count($data) ; $i++) {
-				echo "<p><a target=\"_blank\" href='" . $data[$i]->html_url . "' title='Discussion - " . $data[$i]->title . "'>" .$data[$i]->title."</a></p>";
-			} //end count data
-		} else {
-			echo "<p>Nothing here to see!</p>";
-		}
-
-	}
-
-	function getAssignments($course){
-		global $canvas_site;
-		global $key;
-		$url = $canvas_site . "/courses/" . $course . "/assignments?per_page=50&access_token=" . $key;
-		var_dump($url);
-		$data = CallAPI("GET",$url);
-		// echo $data;
-		$data = json_decode($data);
-		if (is_array($data)) {
-			//fix date issues 
-			echo "<h2>Upcoming Assignments</h2>";
-			for ($i=0; $i < count($data) ; $i++) {
-				
-				if ($data[$i]->has_submitted_submissions == FALSE) {
-					echo "<p><a target=\"_blank\" href='" . $data[$i]->html_url . "' title='Assignment - " . $data[$i]->name . "'>" . $data[$i]->name . "</a></p>";
-				}
-			} //end count data
-			echo "<h2>Past Assignments</h2>";
-			for ($i=0; $i < count($data) ; $i++) {
-				if ($data[$i]->has_submitted_submissions == TRUE) {
-					echo "<p><a target=\"_blank\" href='" . $data[$i]->html_url . "' title='Assignment - " . $data[$i]->name . "'>" . $data[$i]->name . "</a></p>";
-				} 
-			} //end count data
-			//getPastAssignments($data);
-		} else {
-			echo "<p>Nothing here to see!</p>";
-		}
-	} //end getAssignments
-
-
-	function getQuizzes($course){
-		global $canvas_site;
-		global $key;
-		$url = $canvas_site . "/courses/" . $course . "/quizzes?per_page=50&access_token=" . $key;
-		var_dump($url);
-		$data = CallAPI("GET",$url);
-		// echo $data;
-		$data = json_decode($data);
-		echo "<h2>Quizzes</h2>";
-		if (is_array($data)) {
-			for ($i=0; $i < count($data) ; $i++) {
-				echo "<p><a target=\"_blank\" href='" . $data[$i]->html_url . "' title='Quiz - " . $data[$i]->title . "'>" . $data[$i]->title . "</p>";
-			} //end count data
-		} else {
-			echo "<p>Nothing here to see!</p>";
-		}
-
-	} //end getQuizzes
-
-	function getUpcoming($course){
-		global $canvas_site;
-		global $key;
-		$url = $canvas_site . "/courses/" . $course . "/todo?access_token=" . $key;
-		var_dump($url);
-		$data = CallAPI("GET",$url);
-		$data = json_decode($data);
-		echo "<h2>Upcoming This Week</h2>";
-		if (count($data) != 0) {
-			for ($i=0; $i < count($data); $i++) { 
-				for ($j=0; $j < count($data[$i]->assignment); $j++) { 
-					echo "<p><a target=\"_blank\" href='" . $data[$i]->html_url . "' title='Upcoming Assignment - " . $data[$i]->assignment->name . "'>" . $data[$i]->assignment->name . "</p>";
-				}
-			}
-		} else {
-			echo "<p>Nothing Coming Up This Week</p>";
-		}
-		
-
-	}
-
 
 	function getGrades() {
 		global $canvas_site;
@@ -225,17 +112,164 @@ function CallAPI($method, $url, $data = false){
 				echo "</div>";
 			} //end if course not accessible anymore
 		} //end loop
-	
-		//:1188432/enrollments
-		// users/3705576/enrollments
-		// user id from self 3705576
-		//https://clarkcollege.instructure.com/api/v1/users/3705576/enrollments?access_token=9~zmQ7X66pT7Y3MUbIPWlZOGuubND238cgliWJlkixeKKj9BkCJ664hCOAgf7BXIVw
+	}
+
+	function getCourses(){
+		global $canvas_site;
+		global $key;
+		$url = $canvas_site . "/courses?access_token=" . $key; 
+		// var_dump($url);
+		$data = CallAPI("GET",$url);
+		$data = json_decode($data);
+		if (is_array($data)) {
+			echo "<option value=\"--\">-- Select A Course --</option>";
+			for ($i=0; $i < count($data); $i++) {
+				//check to make sure it is a current class
+				if (isset($data[$i]->name)) {
+					echo "<option value=\"" . $data[$i]->id  . "\">" . $data[$i]->name . "</option>";
+				}
+			} 
+		} else {
+			echo "<p>You Have No Courses :(</p>";
+		}
+		
+	} //end getCourses
+
+
+	function getFuture($course,$action){
+		global $canvas_site;
+		global $key;
+		$url = $canvas_site . "/courses/" . $course . "/assignments?per_page=50&bucket=future&access_token=" . $key;
+		// var_dump($url);
+		$data = CallAPI("GET",$url);
+		// echo $data;
+		$data = json_decode($data);
+		if (is_array($data)) {
+			echo "<h2>Upcoming " . $action . "</h2>";
+			for ($i=0; $i < count($data) ; $i++) {
+				$sub_type = $data[$i]->submission_types;
+				for ($j=0; $j <count($sub_type); $j++) { 
+					//check which section is to be displayed
+					if ($action == 'quizzes') {
+						$sub_query = ($sub_type[$j] == 'online_quiz');
+					} elseif($action == 'discussions') {
+						$sub_query = ($sub_type[$j] == 'discussion_topic');
+					} elseif($action == 'assignments'){
+						$sub_query = ($sub_type[$j] == 'online_upload' || $sub_type[$j] == 'online_text_entry' || $sub_type[$j] == 'online_url' || $sub_type[$j] == 'on_paper');
+					}
+					//go through submission matching query types
+					//display name in link with due date
+					if ($sub_query) {
+						echo "<p><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></p>";
+						if (!empty($data[$i]->due_at)) {
+							$date = substr($data[$i]->due_at, 0,10);
+							echo "<p>" . $date . "</p>";
+						} else {
+							echo "<p> No Due Date </p>";
+						}
+					} //end sub_query
+				}		
+			} //end count data
+		} else {
+			echo "<p>Nothing Coming Up!</p>";
+		}
 	}
 
 
-	// if (isset($_GET['course'])) {
-	// 	$course = $_GET['course'];
-	// 	getQuizzes($course);
-	// }
+	function getDiscussions($course){
+		global $canvas_site;
+		global $key;
+		$url = $canvas_site . "/courses/" . $course . "/discussion_topics?per_page=50&access_token=" . $key;
+		//var_dump($url);
+		$data = CallAPI("GET",$url);
+		// echo $data;
+		$data = json_decode($data);
+		if (is_array($data)) {
+			echo "<h2>Discussion Topics</h2>";
+			for ($i=0; $i < count($data) ; $i++) {
+				echo "<p><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Discussion - " . $data[$i]->title . "\">" .$data[$i]->title."</a></p>";
+			} //end count data
+		} else {
+			echo "<p>Nothing here to see!</p>";
+		}
+
+	}
+
+	function getAssignments($course){
+		global $canvas_site;
+		global $key;
+		$url = $canvas_site . "/courses/" . $course . "/activity_stream?per_page=50&access_token=" . $key;
+
+		// $url = $canvas_site . "/courses/" . $course . "/assignments?per_page=50&access_token=" . $key;
+		var_dump($url);
+		$data = CallAPI("GET",$url);
+		// echo $data;
+		$data = json_decode($data);
+		if (is_array($data)) {
+
+			//fix date issues 
+			// echo "<h2>Upcoming Assignments</h2>";
+			for ($i=0; $i < count($data) ; $i++) {
+				$sub_type = $data[$i]->submission_type;
+				if (property_exists($sub_type) && ($sub_type == "online_upload" || $sub_type == "online_url")) {
+					echo "<p><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></p>";
+					
+				}
+			// 	if ($data[$i]->has_submitted_submissions == FALSE) {
+			// 		echo "<p><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></p>";
+			// 	}
+			// } //end count data
+			// echo "<h2>Past Assignments</h2>";
+			// for ($i=0; $i < count($data) ; $i++) {
+			// 	if ($data[$i]->has_submitted_submissions == TRUE) {
+			// 		echo "<p><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></p>";
+			// 	} 
+			} //end count data
+			//getPastAssignments($data);
+		} else {
+			echo "<p>Nothing here to see!</p>";
+		}
+	} //end getAssignments
+
+
+	function getQuizzes($course){
+		global $canvas_site;
+		global $key;
+		$url = $canvas_site . "/courses/" . $course . "/quizzes?per_page=50&access_token=" . $key;
+		//var_dump($url);
+		$data = CallAPI("GET",$url);
+		// echo $data;
+		$data = json_decode($data);
+		echo "<h2>Quizzes</h2>";
+		if (is_array($data)) {
+			for ($i=0; $i < count($data) ; $i++) {
+				echo "<p><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Quiz - " . $data[$i]->title . "\">" . $data[$i]->title . "</p>";
+			} //end count data
+		} else {
+			echo "<p>Nothing here to see!</p>";
+		}
+
+	} //end getQuizzes
+
+	function getUpcoming($course){
+		global $canvas_site;
+		global $key;
+		$url = $canvas_site . "/courses/" . $course . "/todo?access_token=" . $key;
+		//var_dump($url);
+		$data = CallAPI("GET",$url);
+		$data = json_decode($data);
+		echo "<h2>Upcoming This Week</h2>";
+		if (count($data) != 0) {
+			for ($i=0; $i < count($data); $i++) { 
+				for ($j=0; $j < count($data[$i]->assignment); $j++) { 
+					echo "<p><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Upcoming Assignment - " . $data[$i]->assignment->name . "\">" . $data[$i]->assignment->name . "</p>";
+				}
+			}
+		} else {
+			echo "<p>Nothing Coming Up This Week</p>";
+		}
+		
+
+	}
 
  ?>

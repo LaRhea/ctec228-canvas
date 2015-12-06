@@ -65,11 +65,14 @@ body {
 }
 
 h1,h2,h3,h4,h5,h6 {font-family: 'Droid Serif', serif; padding-bottom: 20px;}
-
+h1{font-size: 2em;}
 h2 {font-size: 1.5em;}
-h3 {font-size: 1em;}
+h3 {font-size: 1em; font-family: 'Roboto', sans-serif;}
 
 p {padding:10px 0;}
+
+header {background-color: #333;color:#eee;text-align: center; padding:25px 0;}
+.user {background-color: #eee;padding:15px 0;}
 
 nav { margin:20px 0;}
 	nav .fa {font-size: 2em;}
@@ -111,6 +114,11 @@ nav { margin:20px 0;}
 .xsm-row {width:50px;height:50px;float:left;}
 /*.circle {border-radius: 50%;}*/
 	.xsm-row p {text-align: center;font-size: 1.5em; font-weight: 300; line-height: 50px; padding:0;}
+
+@media (max-width: 800px){
+	.grades h2 {line-height: 15px}
+}
+
 
 .green {border-bottom: 5px solid #2ecc71;}
 .dark-green {border-bottom: 5px solid #27ae60;}

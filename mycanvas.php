@@ -19,14 +19,17 @@
 </head>
 <body>
 	<header>
-	<h1>Welcome <?php getSelf(); ?></h1>
-	<?php
-		getAvatar();
+		<h1>Canvas Dashboard</h1>
 		
-		
-	 ?>
 	</header>
+	<div class="user">
+		<h2>Welcome <?php getSelf(); ?></h2>
+		<?php
+			getAvatar();
+		 ?>
+	</div>
 	<div class="content">
+		
 		<section class='cols grades'>
 			<h2>Current Course Grades</h2>
 			<?php getGrades(); ?>

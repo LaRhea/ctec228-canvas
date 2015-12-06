@@ -39,27 +39,6 @@
 			location = '#course-content';
 			callAjax(url,location);
 		}); //end 
-		
-
-
-		//tab animations
-		// (function ($) { 
-		// 	$('.course-info #course-nav').addClass('active').find('> li:eq(0)').addClass('current');
-			
-		// 	$('.course-info #course-nav button').click(function (g) { 
-		// 		var tab = $(this).closest('.course-info'), 
-		// 			index = $(this).closest('button').index();
-				
-		// 		tab.find('#course-nav > button').removeClass('current');
-		// 		$(this).closest('button').addClass('current');
-				
-		// 		tab.find('.course-content').find('div.tabs_item').not('div.tabs_item:eq(' + index + ')').slideUp();
-		// 		tab.find('.course-content').find('div.tabs_item:eq(' + index + ')').slideDown();
-				
-		// 		g.preventDefault();
-		// 	} );
-		// })(jQuery);
-
 
 	}); //end ready
 
