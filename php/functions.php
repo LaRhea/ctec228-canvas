@@ -26,7 +26,7 @@
 
 			} elseif($action != 'course-sess') {
 				getFuture($_SESSION['course'], $_GET['action']);
-				getAssignments($_SESSION['course']);
+				getPast($_SESSION['course'],$_GET['action']);
 			}
 		}
 	}
@@ -140,36 +140,45 @@ function CallAPI($method, $url, $data = false){
 		global $canvas_site;
 		global $key;
 		$url = $canvas_site . "/courses/" . $course . "/assignments?per_page=50&bucket=future&access_token=" . $key;
-		// var_dump($url);
+		var_dump($url);
 		$data = CallAPI("GET",$url);
 		// echo $data;
 		$data = json_decode($data);
 		if (is_array($data)) {
 			echo "<h2>Upcoming " . $action . "</h2>";
+			echo "<table class='container'>";
+			echo "<tr>";
+			echo "<th>Name</th>";
+			echo "<th>Date</th>";
+			echo "</tr>";
+
 			for ($i=0; $i < count($data) ; $i++) {
+				echo "<tr>";
 				$sub_type = $data[$i]->submission_types;
-				for ($j=0; $j <count($sub_type); $j++) { 
+				// for ($j=0; $j <count($sub_type); $j++) { 
 					//check which section is to be displayed
 					if ($action == 'quizzes') {
-						$sub_query = ($sub_type[$j] == 'online_quiz');
+						$sub_query = (in_array("online_quiz", $sub_type));
 					} elseif($action == 'discussions') {
-						$sub_query = ($sub_type[$j] == 'discussion_topic');
+						$sub_query = (in_array("discussion_topic", $sub_type));
 					} elseif($action == 'assignments'){
-						$sub_query = ($sub_type[$j] == 'online_upload' || $sub_type[$j] == 'online_text_entry' || $sub_type[$j] == 'online_url' || $sub_type[$j] == 'on_paper');
+						$sub_query = (!in_array("online_quiz", $sub_type) && !in_array("discussion_topic", $sub_type));
 					}
 					//go through submission matching query types
 					//display name in link with due date
 					if ($sub_query) {
-						echo "<p><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></p>";
+						echo "<td><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></td>";
 						if (!empty($data[$i]->due_at)) {
 							$date = substr($data[$i]->due_at, 0,10);
-							echo "<p>" . $date . "</p>";
+							echo "<td>" . $date . "</td>";
 						} else {
-							echo "<p> No Due Date </p>";
+							echo "<td> No Due Date </td>";
 						}
 					} //end sub_query
-				}		
+				// }
+				echo "</tr>";		
 			} //end count data
+			echo "</table>";
 		} else {
 			echo "<p>Nothing Coming Up!</p>";
 		}
@@ -195,7 +204,7 @@ function CallAPI($method, $url, $data = false){
 
 	}
 
-	function getAssignments($course){
+	function getPast($course,$action){
 		global $canvas_site;
 		global $key;
 		$url = $canvas_site . "/courses/" . $course . "/assignments?per_page=50&bucket=past&include=submission&access_token=" . $key;
@@ -207,23 +216,40 @@ function CallAPI($method, $url, $data = false){
 		$data = json_decode($data);
 		if (is_array($data)) {
 			//fix date issues 
-			echo "<h2>Past Assignments</h2>";
+			echo "<h2>Past " . $action . "</h2>";
+			echo "<table class='container'>";
+			echo "<tr>";
+			echo "<th>Name</th>";
+			echo "<th>Date</th>";
+			echo "<th>Score</th>";
+			echo "</tr>";
 			for ($i=0; $i < count($data) ; $i++) {
+				echo "<tr>";
 				$sub_type = $data[$i]->submission_types;
-				for ($j=0; $j < count($sub_type); $j++) { 
-					if ($sub_type[$j] != "online_quiz" && $sub_type[$j] != "discussion_topic") {
-						echo "<p><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></p>";
-						echo "<p>" . substr($data[$i]->due_at, 0,10) . "</p>";
+				if ($action == 'quizzes') {
+					$sub_query = (in_array("online_quiz", $sub_type));
+				} elseif($action == 'discussions') {
+					$sub_query = (in_array("discussion_topic", $sub_type));
+				} elseif($action == 'assignments'){
+					$sub_query = (!in_array("online_quiz", $sub_type) && !in_array("discussion_topic", $sub_type));
+				}
+				// for ($j=0; $j < count($sub_type); $j++) { 
+					// if ($sub_type[$j] != "online_quiz" && $sub_type[$j] != "discussion_topic") {
+					if ($sub_query) {
+						echo "<td><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></td>";
+						echo "<td>" . substr($data[$i]->due_at, 0,10) . "</td>";
 						if (isset($data[$i]->submission)) {
-							echo "<p>" . $data[$i]->submission->score . "/" . $data[$i]->points_possible . "</p>";	
+							echo "<td>" . $data[$i]->submission->score . "/" . $data[$i]->points_possible . "</td>";	
 
 						} else {
-							echo "<p>Not Graded</p>";
+							echo "<td>Not Graded</td>";
 						}
 					} //if not quiz or discussion
 
-				}//sub_type count
+				// }//sub_type count
+				echo "</tr>";
 			} //end count data
+			echo "</table>";
 			//getPastAssignments($data);
 		} else {
 			echo "<p>Nothing here to see!</p>";

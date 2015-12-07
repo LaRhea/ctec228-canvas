@@ -194,3 +194,34 @@ nav { margin:20px 0;}
 }*/
 
 .avatar {max-width: 75px; }
+
+table {
+	/*min-width: 900px;*/
+	width:100%;
+	height:auto;
+	max-height: 400px;
+	overflow-y:scroll;
+	margin:20px auto;
+	font-size: 1.3em;
+	text-align: left;
+	border-collapse:collapse;
+}
+	th,td {
+		border: 1px solid black;
+		padding:0px 10px 5px 10px;
+	}
+	th {
+		font-weight: 700;
+		font-size: 1.3em;
+		/*padding:5px 10px 5px 0;*/
+		text-align: center;
+		width:auto;
+		
+	}
+	tr {
+		border-right: 1px solid #7f8c8d;
+		background-color: #ecf0f1;
+	}
+	tr:nth-child(even){
+		background-color: #bdc3c7;
+	}
