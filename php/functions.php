@@ -32,23 +32,23 @@
 	}
 	
 
-function CallAPI($method, $url, $data = false){
-    $curl = curl_init();
-    curl_setopt($curl, CURLOPT_URL, $url);
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-    // new line below for SSL
-    // this is not the best solution to this
-    // but it works for now
-    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-    $result = curl_exec($curl);
-    curl_close($curl);
-    return $result;
-} // end CallAPI
+	function CallAPI($method, $url, $data = false){
+	    $curl = curl_init();
+	    curl_setopt($curl, CURLOPT_URL, $url);
+	    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+	    // new line below for SSL
+	    // this is not the best solution to this
+	    // but it works for now
+	    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+	    $result = curl_exec($curl);
+	    curl_close($curl);
+	    return $result;
+	} // end CallAPI
 
 
 	function mainMenu(){
 		echo "<nav><button class='home'><i class=\"fa fa-clock-o\"></i><br>Upcoming</button><button class=\"assignments\"><i class=\"fa fa-files-o\"></i><br>Assignments</button><button class=\"discussions\"><i class=\"fa fa-comments-o\"></i><br>Discussions</button><button class=\"quizzes\"><i class=\"fa fa-pencil-square-o\"></i><br>Quizzes</button></nav>";
-	} 
+	} //end get mainMenu
 
 
 	function getAvatar(){
@@ -59,7 +59,7 @@ function CallAPI($method, $url, $data = false){
 		$data = CallAPI("GET",$url);
 		$data = json_decode($data);
 		echo "<img class='avatar' src=\"" . $data->avatar_url . "\" alt='User Avatar'>";
-	}
+	}//end getAvatar
 
 
 	function getSelf(){
@@ -71,7 +71,7 @@ function CallAPI($method, $url, $data = false){
 		$data = json_decode($data);
 		echo $data->name ;
 	
-	}
+	}//end getSelf
 
 	function getGrades() {
 		global $canvas_site;
@@ -112,7 +112,7 @@ function CallAPI($method, $url, $data = false){
 				echo "</div>";
 			} //end if course not accessible anymore
 		} //end loop
-	}
+	} //end getGrades
 
 	function getCourses(){
 		global $canvas_site;
@@ -140,10 +140,10 @@ function CallAPI($method, $url, $data = false){
 		global $canvas_site;
 		global $key;
 		$url = $canvas_site . "/courses/" . $course . "/assignments?per_page=50&bucket=future&access_token=" . $key;
-		var_dump($url);
+		// var_dump($url);
 		$data = CallAPI("GET",$url);
-		// echo $data;
 		$data = json_decode($data);
+		$data = sortOrder($data);
 		if (is_array($data)) {
 			echo "<h2>Upcoming " . $action . "</h2>";
 			echo "<table class='container'>";
@@ -167,9 +167,11 @@ function CallAPI($method, $url, $data = false){
 					//go through submission matching query types
 					//display name in link with due date
 					if ($sub_query) {
-						echo "<td><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></td>";
+						echo "<td class='main'><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></td>";
 						if (!empty($data[$i]->due_at)) {
-							$date = substr($data[$i]->due_at, 0,10);
+							$date = $data[$i]->due_at;
+							$date = strtotime($date);
+							$date = date("M j \b\y h:i a", $date);
 							echo "<td>" . $date . "</td>";
 						} else {
 							echo "<td> No Due Date </td>";
@@ -182,45 +184,23 @@ function CallAPI($method, $url, $data = false){
 		} else {
 			echo "<p>Nothing Coming Up!</p>";
 		}
-	}
-
-
-	function getDiscussions($course){
-		global $canvas_site;
-		global $key;
-		$url = $canvas_site . "/courses/" . $course . "/discussion_topics?per_page=50&access_token=" . $key;
-		//var_dump($url);
-		$data = CallAPI("GET",$url);
-		// echo $data;
-		$data = json_decode($data);
-		if (is_array($data)) {
-			echo "<h2>Discussion Topics</h2>";
-			for ($i=0; $i < count($data) ; $i++) {
-				echo "<p><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Discussion - " . $data[$i]->title . "\">" .$data[$i]->title."</a></p>";
-			} //end count data
-		} else {
-			echo "<p>Nothing here to see!</p>";
-		}
-
-	}
+	} //end getFuture
 
 	function getPast($course,$action){
 		global $canvas_site;
 		global $key;
 		$url = $canvas_site . "/courses/" . $course . "/assignments?per_page=50&bucket=past&include=submission&access_token=" . $key;
-
-		// $url = $canvas_site . "/courses/" . $course . "/assignments?per_page=50&access_token=" . $key;
-		var_dump($url);
+		// var_dump($url);
 		$data = CallAPI("GET",$url);
-		// echo $data;
 		$data = json_decode($data);
+		$data = sortOrder($data);
 		if (is_array($data)) {
 			//fix date issues 
 			echo "<h2>Past " . $action . "</h2>";
 			echo "<table class='container'>";
 			echo "<tr>";
 			echo "<th>Name</th>";
-			echo "<th>Date</th>";
+			echo "<th>Due At</th>";
 			echo "<th>Score</th>";
 			echo "</tr>";
 			for ($i=0; $i < count($data) ; $i++) {
@@ -236,8 +216,17 @@ function CallAPI($method, $url, $data = false){
 				// for ($j=0; $j < count($sub_type); $j++) { 
 					// if ($sub_type[$j] != "online_quiz" && $sub_type[$j] != "discussion_topic") {
 					if ($sub_query) {
-						echo "<td><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></td>";
-						echo "<td>" . substr($data[$i]->due_at, 0,10) . "</td>";
+						echo "<td class='main'><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></td>";
+						// $date = substr($data[$i]->due_at, 0,10);
+						if (!empty($data[$i]->due_at)) {
+							$date = $data[$i]->due_at;
+							$date = strtotime($date);
+							$date = date("M j \b\y h:i a", $date);
+							echo "<td>" . $date . "</td>";
+						} else {
+							echo "<td>No Due Date</td>";
+						}
+
 						if (isset($data[$i]->submission)) {
 							echo "<td>" . $data[$i]->submission->score . "/" . $data[$i]->points_possible . "</td>";	
 
@@ -256,38 +245,45 @@ function CallAPI($method, $url, $data = false){
 		}
 	} //end getAssignments
 
+	function sortOrder($data){
+		usort($data, function($a, $b) {
+			return strtotime($b->due_at) - strtotime($a->due_at);
+		});
+		return $data;
+	}
 
-	function getQuizzes($course){
-		global $canvas_site;
-		global $key;
-		$url = $canvas_site . "/courses/" . $course . "/quizzes?per_page=50&access_token=" . $key;
-		//var_dump($url);
-		$data = CallAPI("GET",$url);
-		// echo $data;
-		$data = json_decode($data);
-		echo "<h2>Quizzes</h2>";
-		if (is_array($data)) {
-			for ($i=0; $i < count($data) ; $i++) {
-				echo "<p><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Quiz - " . $data[$i]->title . "\">" . $data[$i]->title . "</p>";
-			} //end count data
-		} else {
-			echo "<p>Nothing here to see!</p>";
-		}
-
-	} //end getQuizzes
+	function sortOrderUpcoming($data){
+		//sort data
+		usort($data, function($a, $b) {
+			return strtotime($b->assignment->due_at) - strtotime($a->assignment->due_at);
+		});
+		return $data;
+	}
 
 	function getUpcoming($course){
 		global $canvas_site;
 		global $key;
 		$url = $canvas_site . "/courses/" . $course . "/todo?access_token=" . $key;
-		//var_dump($url);
+		// var_dump($url);
 		$data = CallAPI("GET",$url);
 		$data = json_decode($data);
+		$data = sortOrderUpcoming($data);
+
 		echo "<h2>Upcoming This Week</h2>";
 		if (count($data) != 0) {
 			for ($i=0; $i < count($data); $i++) { 
 				for ($j=0; $j < count($data[$i]->assignment); $j++) { 
-					echo "<p><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Upcoming Assignment - " . $data[$i]->assignment->name . "\">" . $data[$i]->assignment->name . "</p>";
+					echo "<div class='lg-row'><p><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Upcoming Assignment - " . $data[$i]->assignment->name . "\">" . $data[$i]->assignment->name . "</a></p></div>";
+					echo "<div class='md-row'>";
+					if (!empty($data[$i]->assignment->due_at)) {
+						$date = $data[$i]->assignment->due_at;
+						$date = strtotime($date);
+						$date = date("M j \b\y h:i a", $date);
+						echo "<p>" . $date . "</p>";
+					} else {
+						echo "<p>No Due Date</p>";
+					}
+					echo "</div>";
 				}
 			}
 		} else {
@@ -295,6 +291,25 @@ function CallAPI($method, $url, $data = false){
 		}
 		
 
-	}
+	} //end getUpcoming
+
+	function getAlerts(){
+		global $canvas_site;
+		global $key;
+		$url = $canvas_site . "/users/self/activity_stream?access_token=" . $key;
+		// var_dump($url);
+		$data = CallAPI("GET",$url);
+		$data = json_decode($data);
+		if (is_array($data)) {
+			for ($i=0; $i < count($data); $i++) { 
+				echo "<div class='item-container'>";
+				echo "<a target='_blank' href='" . $data[$i]->html_url . "' title='Details - " . $data[$i]->title . "'>" . $data[$i]->title . "</a>";
+				
+				echo "</div>";
+			}//count
+		} else {
+			echo "<p>No New Alerts or Messages</p>";
+		}//is array
+	}//end getAlerts
 
  ?>

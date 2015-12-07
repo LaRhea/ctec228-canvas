@@ -33,13 +33,12 @@
 		<section class='cols grades'>
 			<h2>Current Course Grades</h2>
 			<?php getGrades(); ?>
-			<!-- <div class="row"><div class="full-row"><h3>CTEC 228  F15  2538 - API &amp; ADV INTEGRATION</h3></div><div class="xsm-row dark-green"><p class="lg-num">B</p></div><div class="clear"></div></div>	
-			<div class="row"><div class="full-row"><h3>CTEC 228  F15  2538 - API &amp; ADV INTEGRATION</h3></div><div class="xsm-row orange"><p class="lg-num">D</p></div><div class="clear"></div></div>
-			<div class="row"><div class="full-row"><h3>CTEC 228  F15  2538 - API &amp; ADV INTEGRATION</h3></div><div class="xsm-row green"><p class="lg-num">A</p></div><div class="clear"></div></div>
-			<div class="row"><div class="full-row"><h3>CTEC 228  F15  2538 - API &amp; ADV INTEGRATION</h3></div><div class="xsm-row red"><p class="lg-num">F</p></div><div class="clear"></div></div>	
-			<div class="row"><div class="full-row"><h3>CTEC 228  F15  2538 - API &amp; ADV INTEGRATION</h3></div><div class="xsm-row yellow"><p class="lg-num">C</p></div><div class="clear"></div></div>
-			<div class="row"><div class="full-row"><h3>CTEC 228  F15  2538 - API &amp; ADV INTEGRATION</h3></div><div class="xsm-row green"><p class="lg-num">A</p></div><div class="clear"></div></div>				
-		 --></section>
+		</section>
+		<section class="alerts">
+			<h2>Messages &amp; Alerts</h2>
+			<?php getAlerts(); ?>
+		</section>
+		
 
 		 <section class='course-info'>
 		 	<h2>Get Course Assignemnts, Quizzes, Discussions</h2>
