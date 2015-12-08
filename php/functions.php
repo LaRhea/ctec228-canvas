@@ -47,8 +47,61 @@
 	} // end CallAPI
 
 
+	if (isset($_GET['id']) && isset($_GET['course_id'])) {
+		$id = $_GET['id'];
+		$course = $_GET['course_id'];
+		// $sql = "REPLACE INTO `favorites` SET 
+		// 		assignment_id` = \"$id\", 
+		// 		`course_id`= \"$course\",
+		// 		`active`= 1";
+		$sql = "INSERT INTO `favorites`(`assignment_id`, `course_id`, `active`) VALUES (\"$id\", \"$course\", 1)";
+		$result = @mysqli_query($dbc,$sql);
+		# did the INSERT "affect" one row? It better have!
+		if(mysqli_affected_rows($dbc) != 0) {
+			getFavorites();
+			// echo "favorites";
+		} else {
+			# something went wrong with the save
+			echo "<p class='fail'>Sorry could not add favorites right now.</p>";
+		}
+	}
+
+	function getFavorites(){
+		global $dbc;
+		$sql = "SELECT * FROM `favorites` WHERE `active`=1";
+		$result = @mysqli_query($dbc,$sql);
+		// if(mysqli_affected_rows($dbc) == 1) {
+			echo "<h2>Important Assignments</h2>";
+			while($row = mysqli_fetch_array($result)){
+				getFavoriteInfo($row['assignment_id'], $row['course_id']);
+			}
+		// } else {
+		// 	echo "No Favorites";
+		// }
+	}
+
+
+	function getFavoriteInfo($id,$course){
+		global $canvas_site;
+		global $key;
+		$url = $canvas_site . "/courses/" . $course . "/assignments/$id?access_token=" . $key;
+		// var_dump($url);
+		$data = CallAPI("GET",$url);
+		$data = json_decode($data);
+		// $data = sortOrder($data);
+		// is_array($data) || 
+		if (!empty($data)) {
+			// for ($i=0; $i < count($data); $i++) { 
+				echo "<div class='item-container'><button class='favorite yellow-color' onClick=\"callAjax('php/favorites.php?id=" . $data->id . "&course=" . $data->course_id . "','#favorites')\"><i class=\"fa fa-star\"></i></button><a target=\"_blank\" href=\"" . $data->html_url . "\" title=\"Assignment - " . $data->name . "\">" . $data->name . "</a></div>";
+			// }
+		} else {
+			echo "No Assignment Details";
+		}
+	}
+
+
 	function mainMenu(){
-		echo "<nav><button class='home'><i class=\"fa fa-clock-o\"></i><br>Upcoming</button><button class=\"assignments\"><i class=\"fa fa-files-o\"></i><br>Assignments</button><button class=\"discussions\"><i class=\"fa fa-comments-o\"></i><br>Discussions</button><button class=\"quizzes\"><i class=\"fa fa-pencil-square-o\"></i><br>Quizzes</button></nav>";
+		echo "<nav><button class='home'><i class=\"fa fa-clock-o\"></i><span class='lg-only'><br>Upcoming</span></button><button class=\"assignments\"><i class=\"fa fa-files-o\"></i><span class='lg-only'><br>Assignments</span></button><button class=\"discussions\"><i class=\"fa fa-comments-o\"></i><span class='lg-only'><br>Discussions</span></button><button class=\"quizzes\"><i class=\"fa fa-pencil-square-o\"></i><span class='lg-only'><br>Quizzes</span></button></nav>";
 	} //end get mainMenu
 
 
@@ -141,7 +194,7 @@
 		global $canvas_site;
 		global $key;
 		$url = $canvas_site . "/courses/" . $course . "/assignments?per_page=50&bucket=future&access_token=" . $key;
-		var_dump($url);
+		// var_dump($url);
 		$data = CallAPI("GET",$url);
 		$data = json_decode($data);
 		$data = sortOrder($data);
@@ -154,7 +207,7 @@
 			echo "</tr>";
 
 			for ($i=0; $i < count($data) ; $i++) {
-				echo "<tr>";
+				
 				$sub_type = $data[$i]->submission_types;
 				// for ($j=0; $j <count($sub_type); $j++) { 
 					//check which section is to be displayed
@@ -168,7 +221,8 @@
 					//go through submission matching query types
 					//display name in link with due date
 					if ($sub_query) {
-						echo "<td class='main'><button class='favorite' onClick=\"callAjax('php/favorites.php?id=" . $data[$i]->id . "&course=" . $data[$i]->course_id . "','#favorites')\"><i class=\"fa fa-star\"></i></button><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></td>";
+						echo "<tr>";
+						echo "<td class='main'><button class='favorite' onClick=\"callAjax('php/functions.php?id=" . $data[$i]->id . "&course_id=" . $data[$i]->course_id . "','#favorites')\"><i class=\"fa fa-star\"></i></button><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></td>";
 						if (!empty($data[$i]->due_at)) {
 							$date = $data[$i]->due_at;
 							$date = strtotime($date);
@@ -177,9 +231,10 @@
 						} else {
 							echo "<td> No Due Date </td>";
 						}
+						echo "</tr>";
 					} //end sub_query
 				// }
-				echo "</tr>";		
+						
 			} //end count data
 			echo "</table>";
 		} else {
@@ -205,7 +260,7 @@
 			echo "<th>Score</th>";
 			echo "</tr>";
 			for ($i=0; $i < count($data) ; $i++) {
-				echo "<tr>";
+				
 				$sub_type = $data[$i]->submission_types;
 				if ($action == 'quizzes') {
 					$sub_query = (in_array("online_quiz", $sub_type));
@@ -217,7 +272,8 @@
 				// for ($j=0; $j < count($sub_type); $j++) { 
 					// if ($sub_type[$j] != "online_quiz" && $sub_type[$j] != "discussion_topic") {
 					if ($sub_query) {
-						echo "<td class='main'><button class='favorite' onClick=\"callAjax('php/favorites.php?id=" . $data[$i]->id . "&course=" . $data[$i]->course_id . "','#favorites')\"><i class=\"fa fa-star\"></i></button><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></td>";
+						echo "<tr>";
+						echo "<td class='main'><button class='favorite' onClick=\"callAjax('php/functions.php?id=" . $data[$i]->id . "&course_id=" . $data[$i]->course_id . "','#favorites')\"><i class=\"fa fa-star\"></i></button><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></td>";
 						// $date = substr($data[$i]->due_at, 0,10);
 						if (!empty($data[$i]->due_at)) {
 							$date = $data[$i]->due_at;
@@ -234,10 +290,11 @@
 						} else {
 							echo "<td>Not Graded</td>";
 						}
+						echo "</tr>";
 					} //if not quiz or discussion
 
 				// }//sub_type count
-				echo "</tr>";
+				
 			} //end count data
 			echo "</table>";
 			//getPastAssignments($data);
