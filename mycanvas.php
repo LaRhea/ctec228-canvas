@@ -1,7 +1,7 @@
 <?php 
 	require 'php/sessions.php';
 	require 'php/functions.php';
-	
+	include 'php/favorites.php';
 
  ?>
 
@@ -39,6 +39,8 @@
 			<?php getAlerts(); ?>
 		</section>
 		
+		<section id="favorites"><?php getFavorites(); ?></section>
+
 
 		 <section class='course-info'>
 		 	<h2>Get Course Assignemnts, Quizzes, Discussions</h2>

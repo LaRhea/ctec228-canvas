@@ -1,6 +1,7 @@
 <?php
 	session_start();
 	include 'connect.inc.php';
+	include 'db_connect.php';
 	// include 'sessions.php';
 
 		if (isset($_GET['course'])) {
@@ -140,7 +141,7 @@
 		global $canvas_site;
 		global $key;
 		$url = $canvas_site . "/courses/" . $course . "/assignments?per_page=50&bucket=future&access_token=" . $key;
-		// var_dump($url);
+		var_dump($url);
 		$data = CallAPI("GET",$url);
 		$data = json_decode($data);
 		$data = sortOrder($data);
@@ -167,7 +168,7 @@
 					//go through submission matching query types
 					//display name in link with due date
 					if ($sub_query) {
-						echo "<td class='main'><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></td>";
+						echo "<td class='main'><button class='favorite' onClick=\"callAjax('php/favorites.php?id=" . $data[$i]->id . "&course=" . $data[$i]->course_id . "','#favorites')\"><i class=\"fa fa-star\"></i></button><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></td>";
 						if (!empty($data[$i]->due_at)) {
 							$date = $data[$i]->due_at;
 							$date = strtotime($date);
@@ -216,7 +217,7 @@
 				// for ($j=0; $j < count($sub_type); $j++) { 
 					// if ($sub_type[$j] != "online_quiz" && $sub_type[$j] != "discussion_topic") {
 					if ($sub_query) {
-						echo "<td class='main'><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></td>";
+						echo "<td class='main'><button class='favorite' onClick=\"callAjax('php/favorites.php?id=" . $data[$i]->id . "&course=" . $data[$i]->course_id . "','#favorites')\"><i class=\"fa fa-star\"></i></button><a target=\"_blank\" href=\"" . $data[$i]->html_url . "\" title=\"Assignment - " . $data[$i]->name . "\">" . $data[$i]->name . "</a></td>";
 						// $date = substr($data[$i]->due_at, 0,10);
 						if (!empty($data[$i]->due_at)) {
 							$date = $data[$i]->due_at;
@@ -312,4 +313,37 @@
 		}//is array
 	}//end getAlerts
 
+
+	// function getFavorites(){
+	// 	global $dbc;
+	// 	$sql = "SELECT * FROM `favorites` WHERE `active`=1";
+	// 	$result = @mysqli_query($dbc,$sql);
+	// 	if(mysqli_affected_rows($dbc) == 1) {
+	// 		echo "<h2>Important Assignments</h2>";
+	// 		while($row = mysqli_fetch_array($result)){
+	// 			getFavoriteInfo($row['assignment_id'], $row['course_id']);
+	// 		}
+	// 	} else {
+	// 		echo "No Favorites";
+	// 	}
+	// }
+
+
+	// function getFavoriteInfo($id,$course){
+	// 	global $canvas_site;
+	// 	global $key;
+	// 	$url = $canvas_site . "/courses/" . $course . "/assignments/$id?access_token=" . $key;
+	// 	// var_dump($url);
+	// 	$data = CallAPI("GET",$url);
+	// 	$data = json_decode($data);
+	// 	// $data = sortOrder($data);
+	// 	// is_array($data) || 
+	// 	if (!empty($data)) {
+	// 		// for ($i=0; $i < count($data); $i++) { 
+	// 			echo "<div class='item-container'><i class=\"fa fa-star\"></i><a target=\"_blank\" href=\"" . $data->html_url . "\" title=\"Assignment - " . $data->name . "\">" . $data->name . "</a></div>";
+	// 		// }
+	// 	} else {
+	// 		echo "No Assignment Details";
+	// 	}
+	// }
  ?>
